@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contabilidad Personal</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+        
+        .header p {
+            color: rgba(255,255,255,0.8);
+            font-size: 1.1rem;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .balance-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .balance-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .balance-card .icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .balance-card h3 {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .balance-card .amount {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0;
+        }
+        
+        .ingresos .amount { color: #10b981; }
+        .gastos .amount { color: #ef4444; }
+        .balance .amount { color: #3b82f6; }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+        }
+        
+        .form-section, .list-section {
+            background: white;
+            padding: 2rem;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .form-section h2, .list-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .transaction-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid #f3f4f6;
+            transition: background-color 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .transaction-item:last-child {
+            border-bottom: none;
+        }
+        
+        .transaction-info {
+            flex: 1;
+        }
+        
+        .transaction-info .concepto {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 0.25rem;
+        }
+        
+        .transaction-info .categoria {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .transaction-info .fecha {
+            color: #999;
+            font-size: 0.85rem;
+        }
+        
+        .transaction-amount {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .transaction-amount.ingreso {
+            color: #10b981;
+        }
+        
+        .transaction-amount.gasto {
+            color: #ef4444;
+        }
+        
+        .delete-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            margin-left: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: #666;
+        }
+        
+        .empty-state .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        .message {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        
+        .message.show {
+            transform: translateX(0);
+        }
+        
+        .message.success {
+            background: #10b981;
+        }
+        
+        .message.error {
+            background: #ef4444;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💰 Contabilidad Personal</h1>
+            <p>Controla tus finanzas de manera inteligente</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="balance-card ingresos">
+                <div class="icon">📈</div>
+                <h3>Total Ingresos</h3>
+                <div class="amount" id="totalIngresos">$0</div>
+            </div>
+            <div class="balance-card gastos">
+                <div class="icon">📉</div>
+                <h3>Total Gastos</h3>
+                <div class="amount" id="totalGastos">$0</div>
+            </div>
+            <div class="balance-card balance">
+                <div class="icon">💳</div>
+                <h3>Balance Total</h3>
+                <div class="amount" id="balanceTotal">$0</div>
+            </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="form-section">
+                <h2>📝 Nueva Transacción</h2>
+                <form id="transactionForm">
+                    <div class="form-group">
+                        <label for="tipo">Tipo</label>
+                        <select id="tipo" required>
+                            <option value="">Seleccionar tipo</option>
+                            <option value="ingreso">💰 Ingreso</option>
+                            <option value="gasto">💸 Gasto</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="concepto">Concepto</label>
+                        <input type="text" id="concepto" placeholder="Ej: Salario, Comida, etc." required>
+                    </div>
+                    <div class="form-group">
+                        <label for="monto">Monto</label>
+                        <input type="number" id="monto" placeholder="0.00" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fecha">Fecha</label>
+                        <input type="date" id="fecha" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="categoria">Categoría</label>
+                        <input type="text" id="categoria" placeholder="Ej: Alimentación, Transporte">
+                    </div>
+                    <button type="submit" class="btn">
+                        <span class="btn-text">Registrar Transacción</span>
+                    </button>
+                </form>
+            </div>
+            
+            <div class="list-section">
+                <h2>📊 Historial de Transacciones</h2>
+                <div class="filters">
+                    <input type="date" id="fechaDesde" placeholder="Fecha desde">
+                    <input type="date" id="fechaHasta" placeholder="Fecha hasta">
+                    <select id="filtroTipo">
+                        <option value="">Todos los tipos</option>
+                        <option value="ingreso">Solo ingresos</option>
+                        <option value="gasto">Solo gastos</option>
+                    </select>
+                </div>
+                <div class="transaction-list" id="transactionList">
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>No hay transacciones aún</p>
+                        <small>Registra tu primera transacción para comenzar</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="message" class="message"></div>
+    
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script>
+        const sb = window.supabase.createClient('https://ifbtcyxjccfhenxpzuge.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmYnRjeXhqY2NmaGVueHB6dWdlIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3ODE1NzE3NSwiZXhwIjoyMDkzNzMzMTc1fQ.GVT3CveficB_D8WijOvKXhlpgiEbX8W8cmLSvhcbSeI');
+        
+        let transactions = [];
+        
+        // Inicializar fecha actual
+        document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+        
+        // Cargar transacciones al iniciar
+        loadTransactions();
+        
+        // Event listeners
+        document.getElementById('transactionForm').addEventListener('submit', handleSubmit);
+        document.getElementById('fechaDesde').addEventListener('change', filterTransactions);
+        document.getElementById('fechaHasta').addEventListener('change', filterTransactions);
+        document.getElementById('filtroTipo').addEventListener('change', filterTransactions);
+        
+        async function handleSubmit(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const transaction = {
+                tipo: document.getElementById('tipo').value,
+                concepto: document.getElementById('concepto').value,
+                monto: parseFloat(document.getElementById('monto').value),
+                fecha: document.getElementById('fecha').value,
+                categoria: document.getElementById('categoria').value || 'Sin categoría'
+            };
+            
+            try {
+                showLoading(true);
+                const { data, error } = await sb
+                    .from('transacciones')
+                    .insert([transaction])
+                    .select();
+                
+                if (error) throw error;
+                
+                showMessage('Transacción registrada correctamente', 'success');
+                document.getElementById('transactionForm').reset();
+                document.getElementById('fecha').value = new Date().toISOString().split('T')[0];
+                loadTransactions();
+            } catch (error) {
+                console.error('Error:', error);
+                showMessage('Error al registrar la transacción', 'error');
+            } finally {
+                showLoading(false);
+            }
+        }
+        
+        async function loadTransactions() {
+            try {
+                const { data, error } = await sb
+                    .from('transacciones')
+                    .select('*')
+                    .order('fecha', { ascending: false });
+                
+                if (error) throw error;
+                
+                transactions = data || [];
+                filterTransactions();
+                updateDashboard();
+            } catch (error) {
+                console.error('Error cargando transacciones:', error);
+                showMessage('Error al cargar las transacciones', 'error');
+            }
+        }
+        
+        function filterTransactions() {
+            const fechaDesde = document.getElementById('fechaDesde').value;
+            const fechaHasta = document.getElementById('fechaHasta').value;
+            const tipoFiltro = document.getElementById('filtroTipo').value;
+            
+            let filtered = [...transactions];
+            
+            if (fechaDesde) {
+                filtered = filtered.filter(t => new Date(t.fecha) >= new Date(fechaDesde));
+            }
+            
+            if (fechaHasta) {
+                filtered = filtered.filter(t => new Date(t.fecha) <= new Date(fechaHasta));
+            }
+            
+            if (tipoFiltro) {
+                filtered = filtered.filter(t => t.tipo === tipoFiltro);
+            }
+            
+            renderTransactions(filtered);
+        }
+        
+        function renderTransactions(transactionsToRender) {
+            const container = document.getElementById('transactionList');
+            
+            if (transactionsToRender.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📋</div>
+                        <p>No hay transacciones</p>
+                        <small>No se encontraron transacciones con los filtros aplicados</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = transactionsToRender.map(transaction => `
+                <div class="transaction-item">
+                    <div class="transaction-info">
+                        <div class="concepto">${transaction.concepto}</div>
+                        <div class="categoria">${transaction.categoria}</div>
+                        <div class="fecha">${formatDate(transaction.fecha)}</div>
+                    </div>
+                    <div class="transaction-amount ${transaction.tipo}">
+                        ${transaction.tipo === 'ingreso' ? '+' : '-'}$${Math.abs(transaction.monto).toFixed(2)}
+                    </div>
+                    <button class="delete-btn" onclick="deleteTransaction('${transaction.id}')" title="Eliminar">
+                        ×
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function updateDashboard() {
+            const ingresos = transactions.filter(t => t.tipo === 'ingreso')
+                .reduce((sum, t) => sum + parseFloat(t.monto), 0);
+            
+            const gastos = transactions.filter(t => t.tipo === 'gasto')
+                .reduce((sum, t) => sum + parseFloat(t.monto), 0);
+            
+            const balance = ingresos - gastos;
+            
+            document.getElementById('totalIngresos').textContent = `$${ingresos.toFixed(2)}`;
+            document.getElementById('totalGastos').textContent = `$${gastos.toFixed(2)}`;
+            document.getElementById('balanceTotal').textContent = `$${balance.toFixed(2)}`;
+        }
+        
+        async function deleteTransaction(id) {
+            if (!confirm('¿Estás seguro de que quieres eliminar esta transacción?')) return;
+            
+            try {
+                const { error } = await sb
+                    .from('transacciones')
+                    .delete()
+                    .eq('id', id);
+                
+                if (error) throw error;
+                
+                showMessage('Transacción eliminada', 'success');
+                loadTransactions();
+            } catch (error) {
+                console.error('Error eliminando transacción:', error);
+                showMessage('Error al eliminar la transacción', 'error');
+            }
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        function showMessage(text, type) {
+            const messageEl = document.getElementById('message');
+            messageEl.textContent = text;
+            messageEl.className = `message ${type} show`;
+            
+            setTimeout(() => {
+                messageEl.classList.remove('show');
+            }, 3000);
+        }
+        
+        function showLoading(show) {
+            const btnText = document.querySelector('.btn-text');
+            if (show) {
+                btnText.innerHTML = '<span class="loading"></span> Procesando...';
+            } else {
+                btnText.textContent = 'Registrar Transacción';
+            }
+        }
+    </script>
+</body>
+</html>
